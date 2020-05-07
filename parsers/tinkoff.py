@@ -68,8 +68,8 @@ def prepare_data_to_parse(path: str, processes_count: int) -> List[List[str]]:
     df = pd.read_csv(path)
     target_column = 'Название'
     if target_column not in df.columns:
-        raise KeyError('Столбец с продкутами должен иметь название "Название"')
-    df = df['Название'].apply(lambda x: [x]).values[:9].tolist()
+        raise KeyError('Dataset must have a column with name "Название"')
+    df = df['Название'].apply(lambda x: [x]).values.tolist()
     return get_batches(df, processes_count)
 
 
@@ -88,4 +88,4 @@ if __name__ == '__main__':
     pool = Pool(processes_count)
     result = pool.map(tinkoff.parse_data, data)
     transform_and_save(result, path_to_save)
-    p.close()
+    pool.close()
