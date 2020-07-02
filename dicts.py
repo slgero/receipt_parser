@@ -165,6 +165,8 @@ BRANDS = {
     'dr.oetker': 'dr. oetker',
     'alp.gold': 'alpen gold',
     'mil.gen.dr' : 'miller',
+    'био-бал.': 'bio balance',
+    'epica': 'epica',
     'с.прид': 'сады придонья',
     'g.gold': 'gourmet gold',
     'colg.з/п': 'colgate',
