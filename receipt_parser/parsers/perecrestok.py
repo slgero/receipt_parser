@@ -34,12 +34,12 @@ class Perecrestok:
         for i in range(0, 50000, 1080):
             driver.execute_script(f"window.scrollTo({i}, {i+1080})")
             sleep(3)
-        page = driver.page_source
+        page: str = driver.page_source
         driver.close()
         return page
 
     @staticmethod
-    def __get_product_name(soup: BeautifulSoup) -> str:
+    def __get_product_name(soup: BeautifulSoup) -> Optional[str]:
         """Return the porduct name."""
 
         name = soup.find(class_="js-product__title xf-product-card__title")
@@ -48,7 +48,7 @@ class Perecrestok:
         return name
 
     @staticmethod
-    def __log_error(function_name: str) -> NoReturn:
+    def __raise_error(function_name: str) -> NoReturn:
         """Raise error if status code not equal 200."""
 
         raise ValueError(f"Проблема с подключением к сети в функции {function_name}.")
@@ -59,7 +59,7 @@ class Perecrestok:
         result: Set[Category] = set()
         resp = req.get(self.url_catalog)
         if resp.status_code != 200:
-            self.__log_error(self.get_catalog.__name__)
+            self.__raise_error(self.get_catalog.__name__)
         soup = BeautifulSoup(resp.text, "lxml")
         for cat in soup.find_all(class_="xf-catalog-categories__item"):
             href = cat.find(class_="xf-catalog-categories__link").get("href")
@@ -75,7 +75,7 @@ class Perecrestok:
         _ = [product.setdefault(key, None) for key in self.columns]
         resp = req.get(url)
         if resp.status_code != 200:
-            self.__log_error(self.__parse_good.__name__)
+            self.__raise_error(self.__parse_good.__name__)
         soup = BeautifulSoup(resp.text, "lxml")
         product["Название"] = self.__get_product_name(soup)
         table = soup.find(
