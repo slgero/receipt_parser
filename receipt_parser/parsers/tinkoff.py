@@ -1,18 +1,20 @@
 """Use Tinkoff(`https://receiptnlp.tinkoff.ru/`) to parse product goods."""
 import sys
 from time import sleep
-from typing import List
+from typing import List, Dict
 from multiprocessing import Pool
-import pandas as pd
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+import pandas as pd  # type: ignore
+from selenium import webdriver  # type: ignore
+from selenium.webdriver.common.keys import Keys  # type: ignore
+# pylint: disable=unbalanced-tuple-unpacking
 
 
 class Tinkoff:
     """Use Tinkoff server to parse product goods. Use Chrome browser."""
 
     def __init__(self):
-        self.url = 'https://receiptnlp.tinkoff.ru/'
+        self.url = "https://receiptnlp.tinkoff.ru/"
+        self.driver = None
 
     def get_session(self) -> None:
         """Open browser."""
@@ -23,7 +25,7 @@ class Tinkoff:
     def fil_fields(self, name: str) -> None:
         """Delete last text in the field and add new one."""
 
-        window = self.driver.find_element_by_class_name('_3gY2s')
+        window = self.driver.find_element_by_class_name("_3gY2s")
         window.send_keys(Keys.CONTROL + "a")
         window.send_keys(Keys.DELETE)
         window.send_keys(name)
@@ -31,16 +33,16 @@ class Tinkoff:
         button.click()
         sleep(0.5)
 
-    def parse_table(self) -> dict:
+    def parse_table(self) -> Dict[str, str]:
         """Parse information on the check."""
 
         table = self.driver.find_element_by_class_name("Mnf-LQLHUyIQdT1VvKhCE")
         result = {}
-        for row in table.text.split('\n'):
-            result[row.split()[0]] = ' '.join(row.split()[1:])
+        for row in table.text.split("\n"):
+            result[row.split()[0]] = " ".join(row.split()[1:])
         return result
 
-    def parse_data(self, products: List[str]) -> List[dict]:
+    def parse_data(self, products: List[str]) -> List[Dict[str, str]]:
         """Start parsing data."""
 
         self.get_session()
@@ -65,27 +67,27 @@ def get_batches(products: List[str], processes_count: int) -> List[List[str]]:
 def prepare_data_to_parse(path: str, processes_count: int) -> List[List[str]]:
     """Read data and prepare it to use in a multiprocessing."""
 
-    df = pd.read_csv(path)
-    target_column = 'Название'
-    if target_column not in df.columns:
+    data = pd.read_csv(path)
+    target_column = "Название"
+    if target_column not in data.columns:
         raise KeyError('Dataset must have a column with name "Название"')
-    df = df['Название'].apply(lambda x: [x]).values.tolist()
-    return get_batches(df, processes_count)
+    data = data["Название"].apply(lambda x: [x]).values.tolist()
+    return get_batches(data, processes_count)
 
 
-def transform_and_save(data: List[List[dict]], path_to_save: str) -> None:
+def transform_and_save(data: List[List[Dict[str, str]]], path_to_save: str) -> None:
     """Expand list if lists and save as csv file."""
 
-    data = [item for elem in data for item in elem]  # List[List[dict]] -> List[dict]
+    # Expand list: List[List[dict]] -> List[dict]
+    data = [item for elem in data for item in elem]  # type: ignore
     pd.DataFrame.from_dict(data).to_csv(path_to_save, index=False)
 
 
-if __name__ == '__main__':
-    _, path_to_db, path_to_save, processes_count = sys.argv
-    processes_count = int(processes_count)
-    data = prepare_data_to_parse(path_to_db, processes_count)
+if __name__ == "__main__":
+    _, PATH_TO_DB, PATH_TO_SAVE, PROCESSES_COUNT = sys.argv
+    prepared_data = prepare_data_to_parse(PATH_TO_DB, int(PROCESSES_COUNT))
     tinkoff = Tinkoff()
-    pool = Pool(processes_count)
-    result = pool.map(tinkoff.parse_data, data)
-    transform_and_save(result, path_to_save)
+    pool = Pool(int(PROCESSES_COUNT))
+    res = pool.map(tinkoff.parse_data, prepared_data)
+    transform_and_save(res, PATH_TO_SAVE)
     pool.close()
