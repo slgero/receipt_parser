@@ -1,7 +1,7 @@
 """Parse info about Magnit supremarket in Edadil story: `https://edadeal.ru/`."""
 from time import sleep
 from typing import List
-from selenium import webdriver
+from selenium import webdriver  # type: ignore
 
 
 class Magnit:
@@ -22,7 +22,7 @@ class Magnit:
         sleep(2)
         self.driver.maximize_window()
 
-    def run_parse(self) -> List[str]:
+    def parse(self) -> List[str]:
         """Parse all product in `https://edadeal.ru`."""
 
         self.basic_auth()
