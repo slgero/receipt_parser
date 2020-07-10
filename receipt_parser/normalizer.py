@@ -1,4 +1,4 @@
-"""Normalize product description"""
+"""Normalize product description."""
 import re
 from typing import Optional, Union
 import pandas as pd  # type: ignore
@@ -19,15 +19,8 @@ class Normalizer:
     6. Delete words from blacklist and words in English;
     7. Replace words using `dicts.PRODUCTS`.
 
-    Parameters
-    ----------
-    data : Union[pd.Series, str]
-        Text column with a description of the products to normalize.
-
     Attributes
     ----------
-    df: pd.DataFrame
-        Text products description to normalize.
     blacklist: np.ndarray
         Stop word list.
     brands: np.ndarray
@@ -36,17 +29,11 @@ class Normalizer:
     Examples
     --------
     >>> product = 'Майонез MR.RICCO Провансаль 67% д/п 400'
-    >>> norm = Normalizer(product)
-    >>> norm.normalize()
+    >>> norm = Normalizer()
+    >>> norm.normalize(product)
     """
 
-    def __init__(self, data: Union[pd.Series, str]):
-        columns = ["name", "name_norm", "product_norm", "brand_norm"]
-        if isinstance(data, pd.Series):
-            self.data = pd.DataFrame(data, columns=columns)
-        else:
-            self.data = pd.DataFrame([[data, None, None, None]], columns=columns)
-
+    def __init__(self):
         self.blacklist = pd.read_csv("data/blacklist.csv")["name"].values
         self.brands = pd.read_csv("data/cleaned/brands_en.csv")["brand"].values
 
@@ -131,34 +118,49 @@ class Normalizer:
             return pd.Series([name, eng_brands])
         return pd.Series([name, brand])
 
-    def normalize(self) -> pd.DataFrame:
+    @staticmethod
+    def __transform_data(data: Union[pd.Series, str]) -> pd.DataFrame:
+        """Transform pd.Series or str to pd.DataFrame."""
+
+        columns = ["name", "name_norm", "product_norm", "brand_norm"]
+
+        if isinstance(data, pd.Series):
+            return pd.DataFrame(data, columns=columns)
+        return pd.DataFrame([[data, None, None, None]], columns=columns)
+
+    def normalize(self, data: Union[pd.Series, str]) -> pd.DataFrame:
         """
         Normalize the description of the product: expand abbreviations,
         delete garbage words and characters for further recognition,
         remove english worlds, etc.
+
+        Parameters
+        ----------
+        data : Union[pd.Series, str]
+            Text column with a description of the products to normalize.
+
+        Returns
+        -------
+        pd.DataFrame
+            Normalized description dataframe.
         """
 
-        self.data["name_norm"] = self.data["name"].str.lower()
-        self.data[["name_norm", "brand_norm"]] = self.data["name_norm"].apply(
+        data = self.__transform_data(data)
+        data["name_norm"] = data["name"].str.lower()
+        data[["name_norm", "brand_norm"]] = data["name_norm"].apply(
             self._remove_numbers
         )
-        self.data[["name_norm", "product_norm", "brand_norm"]] = self.data.apply(
+        data[["name_norm", "product_norm", "brand_norm"]] = data.apply(
             lambda x: self._remove_punctuation(x["name_norm"], x["brand_norm"]), axis=1
         )
-        self.data["name_norm"] = self.data["name_norm"].apply(
-            self._remove_one_and_two_chars
-        )
-        self.data[["name_norm", "brand_norm"]] = self.data.apply(
+        data["name_norm"] = data["name_norm"].apply(self._remove_one_and_two_chars)
+        data[["name_norm", "brand_norm"]] = data.apply(
             lambda x: self.find_en_brands(x["name_norm"], x["brand_norm"]), axis=1
         )
-        self.data["name_norm"] = self.data["name_norm"].apply(
-            self._remove_words_in_blacklist
-        )
-        self.data["name_norm"] = self.data["name_norm"].apply(
-            self._replace_with_product_dict
-        )
-        self.data[["name_norm", "brand_norm"]] = self.data.apply(
+        data["name_norm"] = data["name_norm"].apply(self._remove_words_in_blacklist)
+        data["name_norm"] = data["name_norm"].apply(self._replace_with_product_dict)
+        data[["name_norm", "brand_norm"]] = data.apply(
             lambda x: self._remove_all_english_words(x["name_norm"], x["brand_norm"]),
             axis=1,
         )
-        return self.data
+        return data
