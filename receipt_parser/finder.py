@@ -17,15 +17,6 @@ class Finder:
     Search is carried out in the collected datasets: `brands_ru.csv`,
     `products.csv`, `all_clean.csv`.
 
-    Parameters
-    ----------
-    data_to_parse: Union[pd.DataFrame, str],
-        Data in which product information will be recognized.
-        If data is a pd.DataFrane, it must contain the following columns:
-        ['name_norm', 'product_norm', 'brand_norm'].
-        If the data is a string, it should be normalized:
-        service characters removed, lowercase letters, etc.
-
     Attributes
     ----------
     mystem : class
@@ -36,35 +27,32 @@ class Finder:
         List of Russian brands.
     products : pd.DataFrame
         DataFrame of product names and categories.
-    df : pd.DataFrame
-        The copy of `data_to_parse`.
+    data: pd.DataFrame
+        Text column with a description of the products to parse.
+        Products description should be normalized by Normalizer.
+        See `receipt_parser.normalize.Normalizer`.
 
     Examples
     --------
     >>> product = 'Майонез MR.RICCO Провансаль 67% д/п 400'
-    >>> finder = Finder(product)
-    >>> finder.find_all()
+    >>> finder = Finder()
+    >>> finder.find_all(product)
 
     Notes
     -----
     You may be comfortable with the following resource:
     'https://receiptnlp.tinkoff.ru/'.
+    See also `receipt_parser.parsers.tinkoff`.
     """
 
-    def __init__(self, data_to_parse: Union[pd.DataFrame, str]):
+    def __init__(self):
         self.mystem = Mystem()
 
-        # DataFrames:
+        # Read DataFrames:
         self.rus_brands = pd.read_csv("data/cleaned/brands_ru.csv")["brand"].values
         self.products = pd.read_csv("data/cleaned/products.csv")
         self.product_db = pd.read_csv("data/cleaned/all_clean.csv")
-
-        columns = ["name_norm", "product_norm", "brand_norm"]
-        if isinstance(data_to_parse, pd.DataFrame):
-            self.data = data_to_parse[columns].copy()
-        else:
-            self.data = pd.DataFrame([[data_to_parse, None, None]], columns=columns)
-        self.data["cat_norm"] = None  # Add new column
+        self.data = pd.DataFrame()
 
     def find_brands(self, name: str, brand: Optional[str] = None) -> pd.Series:
         """
@@ -265,16 +253,26 @@ class Finder:
                 end="\n\n",
             )
 
-    def find_all(self, *, verbose: int = 0) -> None:
-        """
-        Start search and recognition in `data_to_parse`.
+    @staticmethod
+    def __transform_data(data: Union[pd.DataFrame, str]) -> pd.DataFrame:
+        """Transform pd.Series or str to pd.DataFrame."""
 
-        Parameters
-        ----------
-        verbose: int (default=0)
-            Set verbose to any positive number for verbosity.
-        """
+        columns = ["product_norm", "brand_norm", "cat_norm"]
 
+        if isinstance(data, str):
+            data = pd.DataFrame([data], columns=["name_norm"])
+        else:
+            if "name_norm" not in data.columns:
+                raise ValueError(
+                    "Столбец с описанием товара должен иметь название `name_norm`."
+                )
+
+        for col in columns:
+            if col not in data.columns:
+                data[col] = None
+        return data
+
+    def __find_all(self, verbose: int) -> None:
         self.__print_logs("Before:", verbose)
 
         # Find brands:
@@ -330,4 +328,29 @@ class Finder:
             axis=1,
         )
         self.__print_logs("Find product by brand:", verbose)
+
+    def find_all(
+        self, data: Union[pd.DataFrame, str], verbose: int = 0
+    ) -> pd.DataFrame:
+        """
+        Start search and recognition in `data_to_parse`.
+
+        Parameters
+        ----------
+        data : Union[pd.DataFrame, str]
+            Text column with a description of the products to parse.
+            Products description should be normalized by Normalizer.
+            See `receipt_parser.normalize.Normalizer`.
+        verbose: int (default=0)
+            Set verbose to any positive number for verbosity.
+
+        Returns
+        -------
+        pd.DataFrame
+            Recognized product names, brands and product categories.
+        """
+
+        self.data = self.__transform_data(data)
+        self.__find_all(verbose)
+
         return self.data
