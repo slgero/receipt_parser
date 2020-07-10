@@ -1,6 +1,6 @@
-pandas
-xlrd>=1.0.0
+bs4
 numpy
+pandas
 pymystem3
 selenium
-bs4
+xlrd
