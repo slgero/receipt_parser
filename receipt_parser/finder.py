@@ -19,7 +19,7 @@ class Finder:
 
     Attributes
     ----------
-    mystem : class
+    mystem : Mystem
         A Python wrapper of the Yandex Mystem 3.1 morphological
         analyzer (http://api.yandex.ru/mystem).
         See aslo `https://github.com/nlpub/pymystem3`.
@@ -113,7 +113,7 @@ class Finder:
                             arr.remove(word)
         return arr
 
-    # pylint: disable=C0330
+    # pylint: disable=bad-continuation
     def find_product(
         self, name: str, product: str, category: Optional[str] = None
     ) -> pd.Series:
@@ -333,7 +333,7 @@ class Finder:
         self, data: Union[pd.DataFrame, str], verbose: int = 0
     ) -> pd.DataFrame:
         """
-        Start search and recognition in `data_to_parse`.
+        Start search and recognition search processes in `data`.
 
         Parameters
         ----------
