@@ -1,6 +1,6 @@
 """Normalize product description."""
 import re
-from typing import Optional, Union
+from typing import Optional, Union, Dict
 import pandas as pd  # type: ignore
 from data.dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
 
@@ -19,6 +19,11 @@ class Normalizer:
     6. Delete words from blacklist and words in English;
     7. Replace words using `dicts.PRODUCTS`.
 
+    Parameters
+    ----------
+    pathes: Optional[Dict[str, str]]
+        Dictionary with paths to *.csv files.
+
     Attributes
     ----------
     blacklist: np.ndarray
@@ -33,9 +38,14 @@ class Normalizer:
     >>> norm.normalize(product)
     """
 
-    def __init__(self):
-        self.blacklist = pd.read_csv("data/blacklist.csv")["name"].values
-        self.brands = pd.read_csv("data/cleaned/brands_en.csv")["brand"].values
+    def __init__(self, pathes: Dict[str, str]):
+        pathes = pathes or {}
+        self.blacklist = pd.read_csv(pathes.get("blacklist", "data/blacklist.csv"))[
+            "name"
+        ].values
+        self.brands = pd.read_csv(pathes.get("brands", "data/cleaned/brands_en.csv"))[
+            "brand"
+        ].values
 
     @staticmethod
     def _remove_numbers(name: str) -> pd.Series:

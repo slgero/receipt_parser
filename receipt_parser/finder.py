@@ -2,7 +2,7 @@
 Search and recognize the name, category and
 brand of a product from its description.
 """
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Dict
 from itertools import combinations
 import pandas as pd  # type: ignore
 from pymystem3 import Mystem  # type: ignore
@@ -16,6 +16,11 @@ class Finder:
     from its description.
     Search is carried out in the collected datasets: `brands_ru.csv`,
     `products.csv`, `all_clean.csv`.
+
+    Parameters
+    ----------
+    pathes: Optional[Dict[str, str]]
+        Dictionary with paths to *.csv files.
 
     Attributes
     ----------
@@ -45,13 +50,17 @@ class Finder:
     See also `receipt_parser.parsers.tinkoff`.
     """
 
-    def __init__(self):
+    def __init__(self, pathes: Dict[str, str]):
         self.mystem = Mystem()
 
         # Read DataFrames:
-        self.rus_brands = pd.read_csv("data/cleaned/brands_ru.csv")["brand"].values
-        self.products = pd.read_csv("data/cleaned/products.csv")
-        self.product_db = pd.read_csv("data/cleaned/all_clean.csv")
+        self.rus_brands = pd.read_csv(
+            pathes.get("rus_brands", "data/cleaned/brands_ru.csv")
+        )["brand"].values
+        self.products = pd.read_csv(pathes.get("products", "data/cleaned/products.csv"))
+        self.product_db = pd.read_csv(
+            pathes.get("product_db", "data/cleaned/all_clean.csv")
+        )
         self.data = pd.DataFrame()
 
     def find_brands(self, name: str, brand: Optional[str] = None) -> pd.Series:

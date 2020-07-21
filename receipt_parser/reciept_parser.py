@@ -2,7 +2,7 @@
 Provide various types of technologies for recognition
 and normalization product descriptions.
 """
-from typing import Union
+from typing import Union, Optional, Dict
 import pandas as pd  # type: ignore
 from finder import Finder
 from normalizer import Normalizer
@@ -14,6 +14,11 @@ class RuleBased:
     Use rules based on regular expressions and
     keyword selective tools on marked datasets to
     recognize product descriptions.
+
+    Parameters
+    ----------
+    pathes: Optional[Dict[str, str]] (default=None)
+        Dictionary with paths to *.csv files.
 
     Attributes
     ----------
@@ -31,9 +36,11 @@ class RuleBased:
     >>> rules.parse(df['name'])
     """
 
-    def __init__(self):
-        self.norm = Normalizer()
-        self.find = Finder()
+    def __init__(self, pathes: Optional[Dict[str, str]] = None):
+        pathes = pathes or {}
+
+        self.norm = Normalizer(pathes)
+        self.find = Finder(pathes)
 
     @staticmethod
     def __transform_data(data: Union[pd.DataFrame, pd.Series, str]) -> pd.Series:
