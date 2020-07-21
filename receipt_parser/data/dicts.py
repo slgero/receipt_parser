@@ -1,7 +1,8 @@
 """Most common abbreviations for product names."""
+from typing import Dict
 
 
-PRODUCTS = {
+PRODUCTS: Dict[str, str] = {
     'морож': 'мороженое',
     'плом': 'пломбир',
     'ароматиз': 'ароматизатор',
@@ -135,7 +136,7 @@ PRODUCTS = {
 }
 
 """Вot brands, anglicisms and acronyms."""
-BRANDS = {
+BRANDS: Dict[str, str] = {
     'д.в д': 'домик в деревне',
     'д.в.д': 'домик в деревне',
     'хл.сп': 'хлебный спас',
@@ -381,7 +382,7 @@ BRANDS = {
     'дом.в/дер.': 'домик в деревне',
 }
 
-SLASH_PRODUCTS = {
+SLASH_PRODUCTS: Dict[str, str] = {
     'б/йог': 'биойогурт',
     'сух/завтрак': 'сухой завтрак',
     'з/щ': 'зубная щётка',
@@ -400,7 +401,7 @@ SLASH_PRODUCTS = {
     'т/бум': 'тулетная бумага',
 }
 
-BRANDS_WITH_NUMBERS = {
+BRANDS_WITH_NUMBERS: Dict[str, str] = {
     'кр.с 1901г': 'чай краснодарский с 1901 года',
     '365 дней': '365 дней',
     '365дней': '365 дней',
