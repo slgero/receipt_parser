@@ -1,7 +1,4 @@
-beautifulsoup4 >= 4.8.2
 numpy >= 1.18.3
 pandas >= 1.0.3
 pymystem3 >= 0.2.0
-selenium >= 3.141.0
 wget >= 3.2
-xlrd >= 1.2.0
