@@ -19,7 +19,7 @@ class Finder:
 
     Parameters
     ----------
-    pathes: Optional[Dict[str, str]]
+    pathes: Optional[Dict[str, str]], (default=None)
         Dictionary with paths to *.csv files.
 
     Attributes
@@ -50,16 +50,17 @@ class Finder:
     See also `receipt_parser.parsers.tinkoff`.
     """
 
-    def __init__(self, pathes: Dict[str, str]):
+    def __init__(self, pathes: Optional[Dict[str, str]] = None):
         self.mystem = Mystem()
 
         # Read DataFrames:
+        pathes = pathes or {}
         self.rus_brands = pd.read_csv(
-            pathes.get("rus_brands", "data/cleaned/brands_ru.csv")
+            pathes.get("rus_brands", "receipt_parser/data/cleaned/brands_ru.csv")
         )["brand"].values
-        self.products = pd.read_csv(pathes.get("products", "data/cleaned/products.csv"))
+        self.products = pd.read_csv(pathes.get("products", "receipt_parser/data/cleaned/products.csv"))
         self.product_db = pd.read_csv(
-            pathes.get("product_db", "data/cleaned/all_clean.csv")
+            pathes.get("product_db", "receipt_parser/data/cleaned/all_clean.csv")
         )
         self.data = pd.DataFrame()
 

@@ -4,8 +4,12 @@ and normalization product descriptions.
 """
 from typing import Union, Optional, Dict
 import pandas as pd  # type: ignore
-from finder import Finder
-from normalizer import Normalizer
+try:
+    from .finder import Finder
+    from .normalizer import Normalizer
+except ImportError:
+    from finder import Finder
+    from normalizer import Normalizer
 
 
 # pylint: disable=too-few-public-methods
