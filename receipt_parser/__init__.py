@@ -1,7 +1,9 @@
-__version__ = '0.0.1'
-__license__ = 'MIT'
+"""A package which allow parsing Reussian receipts."""
 
-from .receipt_parser import RuleBased
-from .finder import Finder
-from .normalizer import Normalizer
+__version__ = "0.0.18"
+__license__ = "MIT"
 
+
+from .receipt_parser import RuleBased  # type: ignore
+from .finder import Finder  # type: ignore
+from .normalizer import Normalizer  # type: ignore

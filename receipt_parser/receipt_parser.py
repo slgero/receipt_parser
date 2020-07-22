@@ -2,14 +2,73 @@
 Provide various types of technologies for recognition
 and normalization product descriptions.
 """
+import os
 from typing import Union, Optional, Dict
+import wget  # type: ignore
 import pandas as pd  # type: ignore
+
 try:
-    from .finder import Finder
-    from .normalizer import Normalizer
+    from receipt_parser.finder import Finder  # type: ignore
+    from receipt_parser.normalizer import Normalizer  # type: ignore
 except ImportError:
     from finder import Finder
     from normalizer import Normalizer
+
+
+class DownloadData:
+    """Download some data that i can't add to PyPi."""
+
+    def __init__(self):
+        self.files: Dict[str, str] = {
+            # pylint: disable=line-too-long
+            "cleaned/all_clean.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/all_clean.csv",
+            "cleaned/brands_en.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/brands_en.csv",
+            "cleaned/brands_ru.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/brands_ru.csv",
+            "cleaned/products.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/products.csv",
+            "blacklist.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/blacklist.csv",
+        }
+        self.home_folder: str = os.path.join(os.getcwd(), "data")
+
+    @staticmethod
+    def _is_folder_exists() -> bool:
+        """Check if folder `data` exists."""
+
+        pwd: str = os.getcwd()
+        data_folder: str = os.path.join(pwd, "data")
+        return os.path.isdir(data_folder)
+
+    @staticmethod
+    def _make_dirs() -> None:
+        """Make 2 dirs: `data/` and `data/cleaned`."""
+
+        os.makedirs("data")
+        os.makedirs(os.path.join("data", "cleaned"))
+
+    def download_files(self) -> None:
+        """Download .csv files from my github account."""
+
+        for name, url in self.files.items():
+            print(f"Download {name.split('/')[-1]}")
+            wget.download(url, os.path.join("data", name))
+
+    def get_pathes(self) -> Dict[str, str]:
+        """Return new pathes to .csv files."""
+
+        pathes: Dict[str, str] = {}
+
+        for path in self.files:
+            name = path.split("/")[-1].split(".")[0]
+            pathes[name] = os.path.join(self.home_folder, path)
+        return pathes
+
+    def download(self) -> Dict[str, str]:
+        """Download files and return new pathes."""
+
+        if not self._is_folder_exists():
+            print("It's need to download some data...")
+            self._make_dirs()
+            self.download_files()
+        return self.get_pathes()
 
 
 # pylint: disable=too-few-public-methods
@@ -41,7 +100,8 @@ class RuleBased:
     """
 
     def __init__(self, pathes: Optional[Dict[str, str]] = None):
-        pathes = pathes or {}
+        download_pathes: Dict[str, str] = DownloadData().download()
+        pathes = pathes or download_pathes
 
         self.norm = Normalizer(pathes)
         self.find = Finder(pathes)

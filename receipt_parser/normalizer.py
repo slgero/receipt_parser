@@ -2,7 +2,9 @@
 import re
 from typing import Optional, Union, Dict
 import pandas as pd  # type: ignore
+
 try:
+    # pylint: disable=line-too-long
     from receipt_parser.dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
 except ModuleNotFoundError:
     from dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
@@ -46,9 +48,9 @@ class Normalizer:
         self.blacklist = pd.read_csv(pathes.get("blacklist", "data/blacklist.csv"))[
             "name"
         ].values
-        self.brands = pd.read_csv(pathes.get("brands_en", "data/cleaned/brands_en.csv"))[
-            "brand"
-        ].values
+        self.brands = pd.read_csv(
+            pathes.get("brands_en", "data/cleaned/brands_en.csv")
+        )["brand"].values
 
     @staticmethod
     def _remove_numbers(name: str) -> pd.Series:

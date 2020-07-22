@@ -56,11 +56,11 @@ class Finder:
         # Read DataFrames:
         pathes = pathes or {}
         self.rus_brands = pd.read_csv(
-            pathes.get("rus_brands", "receipt_parser/data/cleaned/brands_ru.csv")
+            pathes.get("brands_ru", "data/cleaned/brands_ru.csv")
         )["brand"].values
-        self.products = pd.read_csv(pathes.get("products", "receipt_parser/data/cleaned/products.csv"))
+        self.products = pd.read_csv(pathes.get("products", "data/cleaned/products.csv"))
         self.product_db = pd.read_csv(
-            pathes.get("product_db", "receipt_parser/data/cleaned/all_clean.csv")
+            pathes.get("all_clean", "data/cleaned/all_clean.csv")
         )
         self.data = pd.DataFrame()
 

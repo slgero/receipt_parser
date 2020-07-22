@@ -29,15 +29,15 @@ with open("requirements.txt", "r", encoding="UTF-8") as fh:
 
 
 setuptools.setup(
-    name="slgero",
-    version="0.0.1",
+    name="receipt_parser",
+    version=__version__,
     author="Savvov Sergey",
     author_email="sersavvov@yandex.ru",
     description="Allow receipt parsing",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/slgero/receipt_parser",
-    packages=["receipt_parser"],
+    packages=setuptools.find_packages(include=["receipt_parser", "receipt_parser.*"]),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
