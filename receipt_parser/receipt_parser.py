@@ -141,4 +141,5 @@ class RuleBased:
         data = self.__transform_data(data)
         data = self.norm.normalize(data)
         data = self.find.find_all(data, verbose)
+        data = data.drop('name_norm', axis =1)
         return data
