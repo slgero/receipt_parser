@@ -3,9 +3,9 @@ import re
 from typing import Optional, Union, Dict
 import pandas as pd  # type: ignore
 try:
-    from .data.dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
-except ImportError:
-    from data.dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
+    from receipt_parser.dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
+except ModuleNotFoundError:
+    from dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
 
 
 class Normalizer:
@@ -43,10 +43,10 @@ class Normalizer:
 
     def __init__(self, pathes: Optional[Dict[str, str]] = None):
         pathes = pathes or {}
-        self.blacklist = pd.read_csv(pathes.get("blacklist", "receipt_parser/data/blacklist.csv"))[
+        self.blacklist = pd.read_csv(pathes.get("blacklist", "data/blacklist.csv"))[
             "name"
         ].values
-        self.brands = pd.read_csv(pathes.get("brands", "receipt_parser/data/cleaned/brands_en.csv"))[
+        self.brands = pd.read_csv(pathes.get("brands_en", "data/cleaned/brands_en.csv"))[
             "brand"
         ].values
 
