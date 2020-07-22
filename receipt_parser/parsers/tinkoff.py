@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import pandas as pd  # type: ignore
 from selenium import webdriver  # type: ignore
 from selenium.webdriver.common.keys import Keys  # type: ignore
+
 # pylint: disable=unbalanced-tuple-unpacking
 
 
@@ -60,7 +61,7 @@ def get_batches(products: List[str], processes_count: int) -> List[List[str]]:
     result = []
     bath_size = round(len(products) / processes_count)
     for i in range(0, len(products), bath_size):
-        result.append(products[i: i + bath_size])
+        result.append(products[i : i + bath_size])
     return result
 
 

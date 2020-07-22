@@ -11,8 +11,8 @@ try:
     from receipt_parser.finder import Finder  # type: ignore
     from receipt_parser.normalizer import Normalizer  # type: ignore
 except ImportError:
-    from finder import Finder
-    from normalizer import Normalizer
+    from finder import Finder  # type: ignore
+    from normalizer import Normalizer  # type: ignore
 
 
 class DownloadData:
@@ -141,5 +141,5 @@ class RuleBased:
         data = self.__transform_data(data)
         data = self.norm.normalize(data)
         data = self.find.find_all(data, verbose)
-        data = data.drop('name_norm', axis =1)
+        data = data.drop("name_norm", axis=1)
         return data

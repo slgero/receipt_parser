@@ -6,7 +6,7 @@ from selenium import webdriver  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
 import pandas as pd  # type: ignore
 
-Category = NamedTuple('Category', [('name', str), ('url', str)])
+Category = NamedTuple("Category", [("name", str), ("url", str)])
 
 
 class Perecrestok:
@@ -128,4 +128,4 @@ class Perecrestok:
 if __name__ == "__main__":
     parser = Perecrestok()
     data = parser.parse()
-    data.to_csv('perecrestok_goods.csv')
+    data.to_csv("perecrestok_goods.csv")

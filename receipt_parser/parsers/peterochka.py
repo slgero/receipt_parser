@@ -125,4 +125,4 @@ class Peterochka:
 if __name__ == "__main__":
     parser = Peterochka()
     data = parser.parse()
-    data.to_csv('peterochka_goods.csv')
+    data.to_csv("peterochka_goods.csv")
