@@ -24,8 +24,6 @@ jobs:
         pip install pylint mypy black
     - name: Check format with Black
       run: black --check receipt_parser/
-    - name: Check format with Black
-      run: black --check receipt_parser/
     - name: Lint with Pylint
       run: pylint receipt_parser/
     - name: Check with Mypy
