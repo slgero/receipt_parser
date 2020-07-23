@@ -14,8 +14,7 @@ def get_package_variable(name, rel_path="receipt_parser/__init__.py"):
 
             if match:
                 return match.group("value")
-        else:
-            raise RuntimeError("Unable to find variable: " + name)
+        raise RuntimeError("Unable to find variable: " + name)
 
 
 __version__ = get_package_variable("__version__")
