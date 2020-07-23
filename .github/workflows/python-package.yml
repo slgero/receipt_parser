@@ -1,0 +1,32 @@
+# This workflow will install Python dependencies and run pylint, mypy and black
+name: Python package
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pylint mypy black
+    - name: Check format with Black
+      run: black --check receipt_parser/
+    - name: Check format with Black
+      run: black --check receipt_parser/
+    - name: Lint with Pylint
+      run: pylint receipt_parser/
+    - name: Check with Mypy
+      run: mypy receipt_parser/
