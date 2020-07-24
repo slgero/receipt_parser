@@ -119,7 +119,7 @@ class Finder:
                     one_words.append(product)
                 else:
                     for word in one_words:
-                        if word in product:
+                        if word in product and word in arr:
                             arr.remove(word)
         return arr
 

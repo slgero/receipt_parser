@@ -126,7 +126,7 @@ class Normalizer:
         We make the assumption that these words are a brand.
         """
 
-        eng_brands = "".join(re.findall(r"\b([a-z]+)\b", name))
+        eng_brands = " ".join(re.findall(r"\b([a-z]+)\b", name))
         name = re.sub(r"\b([a-z]+)\b", "", name)
 
         if eng_brands and not brand:
