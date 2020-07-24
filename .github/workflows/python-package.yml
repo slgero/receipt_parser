@@ -1,5 +1,5 @@
 # This workflow will install Python dependencies and run pylint, mypy and black
-name: Python package
+name: build
 
 on:
   push:
