@@ -2,7 +2,7 @@
 	<img src="https://i.ibb.co/P6HGqnf/receipt.png" width="450" title="Designed by Freepik">
  <br>
  <a href='https://pypi.org/project/receipt-parser/'><img alt="Version" src="https://img.shields.io/pypi/v/receipt-parser?logo=pypi&logoColor=FFE873"></a>
-   <a href='https://github.com/slgero/receipt_parser/actions?query=workflow%3A%22Python+package%22'><img alt="GitHub Workflow Status" src="https://github.com/slgero/receipt_parser/workflows/Python%20package/badge.svg"></a>
+   <a href='https://github.com/slgero/receipt_parser/actions?query=workflow%3Abuild'><img alt="GitHub Workflow Status" src="https://github.com/slgero/receipt_parser/workflows/build/badge.svg"></a>
    <a href='https://github.com/slgero/receipt_parser/actions?query=workflow%3A%22Upload+Python+Package%22'><img alt="Upload Python Package"
 src="https://github.com/slgero/receipt_parser/workflows/Upload%20Python%20Package/badge.svg"></a>
    <a href="https://www.codefactor.io/repository/github/slgero/receipt_parser"><img src="https://www.codefactor.io/repository/github/slgero/receipt_parser/badge" alt="CodeFactor" /></a>
