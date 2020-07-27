@@ -3,6 +3,7 @@ from typing import Dict, List
 import youtokentome as yttm  # type: ignore
 import torch
 from torch import nn
+
 # pylint: disable=bad-continuation
 # pylint: disable=arguments-differ
 # pylint: disable=not-callable
