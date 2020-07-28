@@ -7,6 +7,11 @@ from itertools import combinations
 import pandas as pd  # type: ignore
 from pymystem3 import Mystem  # type: ignore
 
+try:
+    from cat_model import PredictCategory  # type: ignore
+except ImportError:
+    from receipt_parser.cat_model import PredictCategory  # type: ignore
+
 # pylint: disable=C1801
 
 
@@ -52,7 +57,13 @@ class Finder:
 
     def __init__(self, pathes: Optional[Dict[str, str]] = None):
         self.mystem = Mystem()
-
+        baseline_params = {
+            'num_class': 21,
+            'embed_dim': 50,
+            'vocab_size': 500
+        }
+        self.cat_model = PredictCategory('receipt_parser/models/train_bpe_model.yttm', 'receipt_parser/models/baseline_model.pth', baseline_params)
+        
         # Read DataFrames:
         pathes = pathes or {}
         self.rus_brands = pd.read_csv(
@@ -160,7 +171,10 @@ class Finder:
                 product = ", ".join(
                     self.__remove_duplicate_word(merge["product"].values)
                 )
-                category = merge["category"].value_counts().index[0]
+                if len(merge) == 1:
+                    category = merge["category"].values[0]
+                else:
+                    category = self.cat_model.predict(name)
         return pd.Series([name, product, category])
 
     def _use_mystem(self, name: str, product: str) -> str:
@@ -189,12 +203,14 @@ class Finder:
             name = "".join(self.mystem.lemmatize(name)[:-1])
         return name
 
-    def find_category(self, product: str, category: str) -> pd.Series:
+    def find_category(self, name: str, product: str, category: str) -> pd.Series:
         """
         Find a product category using the dataset `products.csv`.
 
         Parameters
         ----------
+        name : str
+            Product name.
         product : str
             Product description.
         category : str
@@ -210,6 +226,8 @@ class Finder:
             tmp = self.products[self.products["product"] == product]
             if len(tmp):
                 category = tmp["category"].values[0]
+            else:
+                category = self.cat_model.predict(name)
 
         return pd.Series([product, category])
 
@@ -326,7 +344,7 @@ class Finder:
 
         # Find category:
         self.data[["product_norm", "cat_norm"]] = self.data.apply(
-            lambda x: self.find_category(x["product_norm"], x["cat_norm"]), axis=1
+            lambda x: self.find_category(x["name_norm"], x["product_norm"], x["cat_norm"]), axis=1
         )
         self.__print_logs("Find the remaining categories:", verbose)
 
