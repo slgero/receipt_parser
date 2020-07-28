@@ -26,6 +26,8 @@ class DownloadData:
             "cleaned/brands_ru.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/brands_ru.csv",
             "cleaned/products.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/products.csv",
             "blacklist.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/blacklist.csv",
+            "cat_bpe_model.yttm": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/models/cat_bpe_model.yttm",
+            "cat_model.pth": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/models/cat_model.pth",
         }
         self.home_folder: str = os.path.join(os.getcwd(), "data")
 
@@ -39,9 +41,10 @@ class DownloadData:
 
     @staticmethod
     def _make_dirs() -> None:
-        """Make 2 dirs: `data/` and `data/cleaned`."""
+        """Make 3 dirs: `data/`, `models` and `data/cleaned`."""
 
         os.makedirs("data")
+        os.makedirs("models")
         os.makedirs(os.path.join("data", "cleaned"))
 
     def download_files(self) -> None:
@@ -49,7 +52,12 @@ class DownloadData:
 
         for name, url in self.files.items():
             print(f"Download {name.split('/')[-1]}")
-            wget.download(url, os.path.join("data", name))
+            file_extension = name.split('/')[-1].split(".")[-1]
+            if file_extension == 'csv'
+                wget.download(url, os.path.join("data", name))
+            elif file_extension in ['yttm', 'pth']:
+                wget.download(url, os.path.join("models", name))
+            
 
     def get_pathes(self) -> Dict[str, str]:
         """Return new pathes to .csv files."""

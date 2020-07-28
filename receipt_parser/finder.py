@@ -56,16 +56,16 @@ class Finder:
     """
 
     def __init__(self, pathes: Optional[Dict[str, str]] = None):
+        pathes = pathes or {}
         self.mystem = Mystem()
-        baseline_params = {
+        model_params = {
             'num_class': 21,
             'embed_dim': 50,
             'vocab_size': 500
         }
-        self.cat_model = PredictCategory('receipt_parser/models/train_bpe_model.yttm', 'receipt_parser/models/baseline_model.pth', baseline_params)
+        self.cat_model = PredictCategory(pathes.get('cat_bpe_model', 'models/cat_bpe_model.yttm'), pathes.get('cat_model', 'models/cat_model.pth', model_params)
         
         # Read DataFrames:
-        pathes = pathes or {}
         self.rus_brands = pd.read_csv(
             pathes.get("brands_ru", "data/cleaned/brands_ru.csv")
         )["brand"].values
