@@ -1,15 +1,9 @@
 """Predict a category using a neural network."""
+# pylint: skip-file
 from typing import Dict, List
 import youtokentome as yttm  # type: ignore
 import torch
 from torch import nn
-
-# pylint: disable=bad-continuation
-# pylint: disable=arguments-differ
-# pylint: disable=not-callable
-# pylint: disable=no-member
-# pylint: disable=too-few-public-methods
-# pylint: disable=invalid-name
 
 
 class CategoryClassifier(nn.Module):
