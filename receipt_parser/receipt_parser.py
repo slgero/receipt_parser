@@ -19,13 +19,16 @@ class DownloadData:
     """Download some data that i can't add to PyPi."""
 
     def __init__(self):
+        # pylint: disable=line-too-long
+        self.base_url = "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser"
         self.files: Dict[str, str] = {
-            # pylint: disable=line-too-long
-            "cleaned/all_clean.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/all_clean.csv",
-            "cleaned/brands_en.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/brands_en.csv",
-            "cleaned/brands_ru.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/brands_ru.csv",
-            "cleaned/products.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/cleaned/products.csv",
-            "blacklist.csv": "https://raw.githubusercontent.com/slgero/receipt_parser/master/receipt_parser/data/blacklist.csv",
+            "cleaned/all_clean.csv": f"{self.base_url}/data/cleaned/all_clean.csv",
+            "cleaned/brands_en.csv": f"{self.base_url}/data/cleaned/brands_en.csv",
+            "cleaned/brands_ru.csv": f"{self.base_url}/data/cleaned/brands_ru.csv",
+            "cleaned/products.csv": f"{self.base_url}/data/cleaned/products.csv",
+            "blacklist.csv": f"{self.base_url}/data/blacklist.csv",
+            "cat_bpe_model.yttm": f"{self.base_url}/models/cat_bpe_model.yttm",
+            "cat_model.pth": f"{self.base_url}/models/cat_model.pth",
         }
         self.home_folder: str = os.path.join(os.getcwd(), "data")
 
@@ -39,20 +42,21 @@ class DownloadData:
 
     @staticmethod
     def _make_dirs() -> None:
-        """Make 2 dirs: `data/` and `data/cleaned`."""
+        """Make 3 dirs: `data/`, `models` and `data/cleaned`."""
 
         os.makedirs("data")
         os.makedirs(os.path.join("data", "cleaned"))
+        os.makedirs(os.path.join("data", "models"))
 
     def download_files(self) -> None:
-        """Download .csv files from my github account."""
+        """Download files from my github account."""
 
         for name, url in self.files.items():
             print(f"Download {name.split('/')[-1]}")
             wget.download(url, os.path.join("data", name))
 
     def get_pathes(self) -> Dict[str, str]:
-        """Return new pathes to .csv files."""
+        """Return new pathes to files."""
 
         pathes: Dict[str, str] = {}
 

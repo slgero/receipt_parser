@@ -7,6 +7,11 @@ from itertools import combinations
 import pandas as pd  # type: ignore
 from pymystem3 import Mystem  # type: ignore
 
+try:
+    from cat_model import PredictCategory  # type: ignore
+except ImportError:
+    from receipt_parser.cat_model import PredictCategory  # type: ignore
+
 # pylint: disable=C1801
 
 
@@ -20,7 +25,7 @@ class Finder:
     Parameters
     ----------
     pathes: Optional[Dict[str, str]], (default=None)
-        Dictionary with paths to *.csv files.
+        Dictionary with paths to required files.
 
     Attributes
     ----------
@@ -28,10 +33,15 @@ class Finder:
         A Python wrapper of the Yandex Mystem 3.1 morphological
         analyzer (http://api.yandex.ru/mystem).
         See aslo `https://github.com/nlpub/pymystem3`.
-    rus_brands : np.ndarray
+    cat_model: PredictCategory
+        Class for predicting a category by product description
+        using a neural network written in PyTorch.
+    brands_ru : np.ndarray
         List of Russian brands.
     products : pd.DataFrame
         DataFrame of product names and categories.
+    all_clean : pd.DataFrame
+        General dataset with all product information.
     data: pd.DataFrame
         Text column with a description of the products to parse.
         Products description should be normalized by Normalizer.
@@ -51,17 +61,22 @@ class Finder:
     """
 
     def __init__(self, pathes: Optional[Dict[str, str]] = None):
+        pathes = pathes or {}
         self.mystem = Mystem()
 
+        # Init model:
+        model_params = {"num_class": 21, "embed_dim": 50, "vocab_size": 500}
+        bpe_model = pathes.get("cat_bpe_model", "models/cat_bpe_model.yttm")
+        cat_model = pathes.get("cat_model", "models/cat_model.pth")
+        self.cat_model = PredictCategory(bpe_model, cat_model, model_params)
+
         # Read DataFrames:
-        pathes = pathes or {}
-        self.rus_brands = pd.read_csv(
-            pathes.get("brands_ru", "data/cleaned/brands_ru.csv")
-        )["brand"].values
-        self.products = pd.read_csv(pathes.get("products", "data/cleaned/products.csv"))
-        self.product_db = pd.read_csv(
-            pathes.get("all_clean", "data/cleaned/all_clean.csv")
-        )
+        brands = pathes.get("brands_ru", "data/cleaned/brands_ru.csv")
+        products = pathes.get("products", "data/cleaned/products.csv")
+        all_clean = pathes.get("all_clean", "data/cleaned/all_clean.csv")
+        self.brands_ru = pd.read_csv(brands)["brand"].values
+        self.products = pd.read_csv(products)
+        self.all_clean = pd.read_csv(all_clean)
         self.data = pd.DataFrame()
 
     def find_brands(self, name: str, brand: Optional[str] = None) -> pd.Series:
@@ -88,7 +103,7 @@ class Finder:
                 [f"{comb[0]} {comb[1]}" for comb in combinations(name.split(), 2)]
                 + name.split()
             )
-            for rus_brand in self.rus_brands:
+            for rus_brand in self.brands_ru:
                 if rus_brand in names:
                     name = name.replace(rus_brand, "").replace("  ", " ").strip()
                     return pd.Series([name, rus_brand])
@@ -160,7 +175,10 @@ class Finder:
                 product = ", ".join(
                     self.__remove_duplicate_word(merge["product"].values)
                 )
-                category = merge["category"].value_counts().index[0]
+                if len(merge) == 1:
+                    category = merge["category"].values[0]
+                else:
+                    category = self.cat_model.predict(name)
         return pd.Series([name, product, category])
 
     def _use_mystem(self, name: str, product: str) -> str:
@@ -189,12 +207,14 @@ class Finder:
             name = "".join(self.mystem.lemmatize(name)[:-1])
         return name
 
-    def find_category(self, product: str, category: str) -> pd.Series:
+    def find_category(self, name: str, product: str, category: str) -> pd.Series:
         """
         Find a product category using the dataset `products.csv`.
 
         Parameters
         ----------
+        name : str
+            Product name.
         product : str
             Product description.
         category : str
@@ -210,6 +230,8 @@ class Finder:
             tmp = self.products[self.products["product"] == product]
             if len(tmp):
                 category = tmp["category"].values[0]
+            else:
+                category = self.cat_model.predict(name)
 
         return pd.Series([product, category])
 
@@ -237,7 +259,7 @@ class Finder:
         """
 
         if brand and not product:
-            single_brand_goods = self.product_db[self.product_db["Бренд"] == brand]
+            single_brand_goods = self.all_clean[self.all_clean["Бренд"] == brand]
             if len(single_brand_goods):
                 product = single_brand_goods["Продукт"].value_counts().index[0]
                 category = single_brand_goods["Категория"].value_counts().index[0]
@@ -326,7 +348,10 @@ class Finder:
 
         # Find category:
         self.data[["product_norm", "cat_norm"]] = self.data.apply(
-            lambda x: self.find_category(x["product_norm"], x["cat_norm"]), axis=1
+            lambda x: self.find_category(
+                x["name_norm"], x["product_norm"], x["cat_norm"]
+            ),
+            axis=1,
         )
         self.__print_logs("Find the remaining categories:", verbose)
 
