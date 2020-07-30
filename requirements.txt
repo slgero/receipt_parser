@@ -1,8 +1,7 @@
 numpy >= 1.18.3
 pandas >= 1.0.3
 pymystem3 >= 0.2.0
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==1.6.0+cpu
-torchvision==0.7.0+cpu
+torch
+torchvision
 wget >= 3.2
 youtokentome >= 1.0.6
