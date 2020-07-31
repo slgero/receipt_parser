@@ -6,6 +6,8 @@ from typing import Optional, List, Union, Dict
 from itertools import combinations
 import pandas as pd  # type: ignore
 from pymystem3 import Mystem  # type: ignore
+from pandarallel import pandarallel
+pandarallel.initialize(progress_bar=False, verbose=0)
 
 try:
     from cat_model import PredictCategory  # type: ignore
@@ -308,20 +310,20 @@ class Finder:
         self.__print_logs("Before:", verbose)
 
         # Find brands:
-        self.data[["name_norm", "brand_norm"]] = self.data.apply(
+        self.data[["name_norm", "brand_norm"]] = self.data.parallel_apply(
             lambda x: self.find_brands(x["name_norm"], x["brand_norm"]), axis=1
         )
         self.__print_logs("Find brands:", verbose)
 
         # Find product and category:
-        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.apply(
+        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.parallel_apply(
             lambda x: self.find_product(x["name_norm"], x["product_norm"]), axis=1
         )
         self.__print_logs("Find product and category:", verbose)
 
         # Remove `-`:
         self.data["name_norm"] = self.data["name_norm"].str.replace("-", " ")
-        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.apply(
+        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.parallel_apply(
             lambda x: self.find_product(
                 x["name_norm"], x["product_norm"], x["cat_norm"]
             ),
@@ -332,10 +334,10 @@ class Finder:
         )
 
         # Use Mystem:
-        self.data["name_norm"] = self.data.apply(
+        self.data["name_norm"] = self.data.parallel_apply(
             lambda x: self._use_mystem(x["name_norm"], x["product_norm"]), axis=1
         )
-        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.apply(
+        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.parallel_apply(
             lambda x: self.find_product(
                 x["name_norm"], x["product_norm"], x["cat_norm"]
             ),
@@ -347,7 +349,7 @@ class Finder:
         )
 
         # Find category:
-        self.data[["product_norm", "cat_norm"]] = self.data.apply(
+        self.data[["product_norm", "cat_norm"]] = self.data.parallel_apply(
             lambda x: self.find_category(
                 x["name_norm"], x["product_norm"], x["cat_norm"]
             ),
@@ -356,7 +358,7 @@ class Finder:
         self.__print_logs("Find the remaining categories:", verbose)
 
         # Find product by brand:
-        self.data[["product_norm", "brand_norm", "cat_norm"]] = self.data.apply(
+        self.data[["product_norm", "brand_norm", "cat_norm"]] = self.data.parallel_apply(
             lambda x: self.find_product_by_brand(
                 x["product_norm"], x["brand_norm"], x["cat_norm"]
             ),
