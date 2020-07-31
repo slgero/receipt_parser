@@ -7,6 +7,7 @@ from itertools import combinations
 import pandas as pd  # type: ignore
 from pymystem3 import Mystem  # type: ignore
 from pandarallel import pandarallel
+
 pandarallel.initialize(progress_bar=False, verbose=0)
 
 try:
@@ -358,7 +359,9 @@ class Finder:
         self.__print_logs("Find the remaining categories:", verbose)
 
         # Find product by brand:
-        self.data[["product_norm", "brand_norm", "cat_norm"]] = self.data.parallel_apply(
+        self.data[
+            ["product_norm", "brand_norm", "cat_norm"]
+        ] = self.data.parallel_apply(
             lambda x: self.find_product_by_brand(
                 x["product_norm"], x["brand_norm"], x["cat_norm"]
             ),

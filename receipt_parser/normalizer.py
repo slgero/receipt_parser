@@ -3,6 +3,7 @@ import re
 from typing import Optional, Union, Dict
 import pandas as pd  # type: ignore
 from pandarallel import pandarallel
+
 pandarallel.initialize(progress_bar=False, verbose=0)
 
 try:
@@ -170,12 +171,18 @@ class Normalizer:
         data[["name_norm", "product_norm", "brand_norm"]] = data.parallel_apply(
             lambda x: self._remove_punctuation(x["name_norm"], x["brand_norm"]), axis=1
         )
-        data["name_norm"] = data["name_norm"].parallel_apply(self._remove_one_and_two_chars)
+        data["name_norm"] = data["name_norm"].parallel_apply(
+            self._remove_one_and_two_chars
+        )
         data[["name_norm", "brand_norm"]] = data.parallel_apply(
             lambda x: self.find_en_brands(x["name_norm"], x["brand_norm"]), axis=1
         )
-        data["name_norm"] = data["name_norm"].parallel_apply(self._remove_words_in_blacklist)
-        data["name_norm"] = data["name_norm"].parallel_apply(self._replace_with_product_dict)
+        data["name_norm"] = data["name_norm"].parallel_apply(
+            self._remove_words_in_blacklist
+        )
+        data["name_norm"] = data["name_norm"].parallel_apply(
+            self._replace_with_product_dict
+        )
         data[["name_norm", "brand_norm"]] = data.parallel_apply(
             lambda x: self._remove_all_english_words(x["name_norm"], x["brand_norm"]),
             axis=1,
