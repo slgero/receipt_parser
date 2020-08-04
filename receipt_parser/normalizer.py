@@ -2,12 +2,96 @@
 import re
 from typing import Optional, Union, Dict
 import pandas as pd  # type: ignore
+from pandarallel import pandarallel  # type: ignore
+
+pandarallel.initialize(progress_bar=False, verbose=0)
 
 try:
     # pylint: disable=line-too-long
     from receipt_parser.dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
 except ModuleNotFoundError:
     from dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
+
+
+# pylint: disable=bad-continuation
+class Apply:
+    """User define the `apply` function from pd.Series and pd.DataFrame"""
+
+    @staticmethod
+    def series_apply(data: pd.Series, func, use_parallel: Optional[bool] = None):
+        """
+        User define the `apply` function from pd.Series.
+
+        Parameters
+        ----------
+        data : pd.Series
+            The data on which the `func` function will be applied.
+        func : function
+            Function to apply to each column or row.
+        use_parallel : Optional[bool], default=None
+            Multiprocessing will be used if the data size is greater than 30000.
+
+        Returns
+        -------
+        pd.DataFrame
+            Result of applying ``func`` on the Series.
+
+        Examples
+        --------
+        >>> from pandas import Series
+
+        >>> Series.my_apply = series_apply
+        >>> df['name'].my_apply(foo)
+        """
+
+        if use_parallel is None:
+            use_parallel = len(data) >= 10000
+        if use_parallel:
+            return data.parallel_apply(func)
+        return data.apply(func)
+
+    @staticmethod
+    def df_apply(
+        data: pd.DataFrame, func, use_parallel: Optional[bool] = None, axis: int = 1
+    ) -> pd.DataFrame:
+        """
+        User define the `apply` function from pd.DataFrame.
+        Use only for 2-column data.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The data on which the `func` function will be applied.
+        func : function
+            Function to apply to each column or row.
+        use_parallel : Optional[bool], default=None
+            Multiprocessing will be used if the data size is greater than 30000.
+        axis : {0 or 'index', 1 or 'columns'}, default=1
+            Axis along which the function is applied.
+
+        Returns
+        -------
+        pd.DataFrame
+            Result of applying ``func`` along the given axis of the DataFrame.
+
+        Examples
+        --------
+        >>> from pandas import DataFrame
+
+        >>> DataFrame.my_apply = df_apply
+        >>> df[['name', 'brand']].my_apply(foo)
+        """
+
+        _cols = data.columns
+
+        if use_parallel is None:
+            use_parallel = len(data) >= 10000
+
+        if use_parallel:
+            return data.parallel_apply(
+                lambda x: func(x[_cols[0]], x[_cols[1]]), axis=axis
+            )
+        return data.apply(lambda x: func(x[_cols[0]], x[_cols[1]]), axis=axis)
 
 
 class Normalizer:
@@ -51,6 +135,10 @@ class Normalizer:
         self.brands = pd.read_csv(
             pathes.get("brands_en", "data/cleaned/brands_en.csv")
         )["brand"].values
+
+        # Init user define apply function:
+        pd.DataFrame.appl = Apply.df_apply
+        pd.Series.appl = Apply.series_apply
 
     @staticmethod
     def _remove_numbers(name: str) -> pd.Series:
@@ -162,20 +250,17 @@ class Normalizer:
 
         data = self.__transform_data(data)
         data["name_norm"] = data["name"].str.lower()
-        data[["name_norm", "brand_norm"]] = data["name_norm"].apply(
-            self._remove_numbers
+        data[["name_norm", "brand_norm"]] = data["name_norm"].appl(self._remove_numbers)
+        data[["name_norm", "product_norm", "brand_norm"]] = data[
+            ["name_norm", "brand_norm"]
+        ].appl(self._remove_punctuation)
+        data["name_norm"] = data["name_norm"].appl(self._remove_one_and_two_chars)
+        data[["name_norm", "brand_norm"]] = data[["name_norm", "brand_norm"]].appl(
+            self.find_en_brands
         )
-        data[["name_norm", "product_norm", "brand_norm"]] = data.apply(
-            lambda x: self._remove_punctuation(x["name_norm"], x["brand_norm"]), axis=1
-        )
-        data["name_norm"] = data["name_norm"].apply(self._remove_one_and_two_chars)
-        data[["name_norm", "brand_norm"]] = data.apply(
-            lambda x: self.find_en_brands(x["name_norm"], x["brand_norm"]), axis=1
-        )
-        data["name_norm"] = data["name_norm"].apply(self._remove_words_in_blacklist)
-        data["name_norm"] = data["name_norm"].apply(self._replace_with_product_dict)
-        data[["name_norm", "brand_norm"]] = data.apply(
-            lambda x: self._remove_all_english_words(x["name_norm"], x["brand_norm"]),
-            axis=1,
+        data["name_norm"] = data["name_norm"].appl(self._remove_words_in_blacklist)
+        data["name_norm"] = data["name_norm"].appl(self._replace_with_product_dict)
+        data[["name_norm", "brand_norm"]] = data[["name_norm", "brand_norm"]].appl(
+            self._remove_all_english_words
         )
         return data

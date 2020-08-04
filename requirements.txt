@@ -1,6 +1,8 @@
 numpy >= 1.18.3
 pandas >= 1.0.3
+pandarallel >= 1.4.8
 pymystem3 >= 0.2.0
+setuptools
 torch
 torchvision
 wget >= 3.2
