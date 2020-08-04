@@ -2,7 +2,7 @@
 import re
 from typing import Optional, Union, Dict
 import pandas as pd  # type: ignore
-from pandarallel import pandarallel
+from pandarallel import pandarallel  # type: ignore
 
 pandarallel.initialize(progress_bar=False, verbose=0)
 
@@ -12,10 +12,11 @@ try:
 except ModuleNotFoundError:
     from dicts import PRODUCTS, BRANDS, SLASH_PRODUCTS, BRANDS_WITH_NUMBERS  # type: ignore
 
-    
+
+# pylint: disable=bad-continuation
 class Apply:
     """User define the `apply` function from pd.Series and pd.DataFrame"""
-    
+
     @staticmethod
     def series_apply(data: pd.Series, func, use_parallel: Optional[bool] = None):
         """
@@ -44,13 +45,15 @@ class Apply:
         """
 
         if use_parallel is None:
-            use_parallel = len(data) >= 20000
+            use_parallel = len(data) >= 10000
         if use_parallel:
             return data.parallel_apply(func)
         return data.apply(func)
 
     @staticmethod
-    def df_apply(data: pd.DataFrame, func, use_parallel: Optional[bool] = None, axis: int = 1) -> pd.DataFrame:
+    def df_apply(
+        data: pd.DataFrame, func, use_parallel: Optional[bool] = None, axis: int = 1
+    ) -> pd.DataFrame:
         """
         User define the `apply` function from pd.DataFrame.
         Use only for 2-column data.
@@ -79,14 +82,15 @@ class Apply:
         >>> df[['name', 'brand']].my_apply(foo)
         """
 
-
         _cols = data.columns
-        
+
         if use_parallel is None:
-            use_parallel = len(data) >= 20000
-        
+            use_parallel = len(data) >= 10000
+
         if use_parallel:
-            return data.parallel_apply(lambda x: func(x[_cols[0]], x[_cols[1]]), axis=axis)
+            return data.parallel_apply(
+                lambda x: func(x[_cols[0]], x[_cols[1]]), axis=axis
+            )
         return data.apply(lambda x: func(x[_cols[0]], x[_cols[1]]), axis=axis)
 
 
@@ -131,7 +135,7 @@ class Normalizer:
         self.brands = pd.read_csv(
             pathes.get("brands_en", "data/cleaned/brands_en.csv")
         )["brand"].values
-        
+
         # Init user define apply function:
         pd.DataFrame.appl = Apply.df_apply
         pd.Series.appl = Apply.series_apply
@@ -247,10 +251,16 @@ class Normalizer:
         data = self.__transform_data(data)
         data["name_norm"] = data["name"].str.lower()
         data[["name_norm", "brand_norm"]] = data["name_norm"].appl(self._remove_numbers)
-        data[["name_norm", "product_norm", "brand_norm"]] = data[["name_norm", "brand_norm"]].appl(self._remove_punctuation)
+        data[["name_norm", "product_norm", "brand_norm"]] = data[
+            ["name_norm", "brand_norm"]
+        ].appl(self._remove_punctuation)
         data["name_norm"] = data["name_norm"].appl(self._remove_one_and_two_chars)
-        data[["name_norm", "brand_norm"]] = data[["name_norm", "brand_norm"]].appl(self.find_en_brands)
+        data[["name_norm", "brand_norm"]] = data[["name_norm", "brand_norm"]].appl(
+            self.find_en_brands
+        )
         data["name_norm"] = data["name_norm"].appl(self._remove_words_in_blacklist)
         data["name_norm"] = data["name_norm"].appl(self._replace_with_product_dict)
-        data[["name_norm", "brand_norm"]] = data[["name_norm", "brand_norm"]].appl(self._remove_all_english_words)
+        data[["name_norm", "brand_norm"]] = data[["name_norm", "brand_norm"]].appl(
+            self._remove_all_english_words
+        )
         return data

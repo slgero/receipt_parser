@@ -15,6 +15,42 @@ except ImportError:
 # pylint: disable=C1801
 
 
+def df_apply(data: pd.DataFrame, func, axis: int = 1) -> pd.DataFrame:
+    """
+        User define the `apply` function from pd.DataFrame.
+        Use only for 2-column and 3-column data.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            The data on which the `func` function will be applied.
+        func : function
+            Function to apply to each column or row.
+        axis : {0 or 'index', 1 or 'columns'}, default=1
+            Axis along which the function is applied.
+
+        Returns
+        -------
+        pd.DataFrame
+            Result of applying ``func`` along the given axis of the
+            DataFrame.
+
+        Examples
+        --------
+        >>> from pandas import DataFrame
+
+        >>> DataFrame.my_apply = df_apply
+        >>> df[['name', 'brand']].my_apply(foo)
+        """
+
+    _cols = data.columns
+    _len = len(_cols)
+
+    if _len == 2:
+        return data.apply(lambda x: func(x[_cols[0]], x[_cols[1]]), axis=axis)
+    return data.apply(lambda x: func(x[_cols[0]], x[_cols[1]], x[_cols[2]]), axis=axis)
+
+
 class Finder:
     """
     Search and recognize the name, category and brand of a product
@@ -63,6 +99,7 @@ class Finder:
     def __init__(self, pathes: Optional[Dict[str, str]] = None):
         pathes = pathes or {}
         self.mystem = Mystem()
+        pd.DataFrame.appl = df_apply
 
         # Init model:
         model_params = {"num_class": 21, "embed_dim": 50, "vocab_size": 500}
@@ -308,62 +345,48 @@ class Finder:
         self.__print_logs("Before:", verbose)
 
         # Find brands:
-        self.data[["name_norm", "brand_norm"]] = self.data.apply(
-            lambda x: self.find_brands(x["name_norm"], x["brand_norm"]), axis=1
-        )
+        self.data[["name_norm", "brand_norm"]] = self.data[
+            ["name_norm", "brand_norm"]
+        ].appl(self.find_brands)
         self.__print_logs("Find brands:", verbose)
 
         # Find product and category:
-        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.apply(
-            lambda x: self.find_product(x["name_norm"], x["product_norm"]), axis=1
-        )
+        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data[
+            ["name_norm", "product_norm"]
+        ].appl(self.find_product)
         self.__print_logs("Find product and category:", verbose)
 
         # Remove `-`:
         self.data["name_norm"] = self.data["name_norm"].str.replace("-", " ")
-        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.apply(
-            lambda x: self.find_product(
-                x["name_norm"], x["product_norm"], x["cat_norm"]
-            ),
-            axis=1,
-        )
+        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data[
+            ["name_norm", "product_norm", "cat_norm"]
+        ].appl(self.find_product)
         self.__print_logs(
             "Remove `-` and the second attempt to find a product:", verbose
         )
 
         # Use Mystem:
-        self.data["name_norm"] = self.data.apply(
-            lambda x: self._use_mystem(x["name_norm"], x["product_norm"]), axis=1
+        self.data["name_norm"] = self.data[["name_norm", "product_norm"]].appl(
+            self._use_mystem
         )
-        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data.apply(
-            lambda x: self.find_product(
-                x["name_norm"], x["product_norm"], x["cat_norm"]
-            ),
-            axis=1,
-        )
+        self.data[["name_norm", "product_norm", "cat_norm"]] = self.data[
+            ["name_norm", "product_norm", "cat_norm"]
+        ].appl(self.find_product)
         self.__print_logs(
             "Use Mystem for lemmatization and the third attempt to find a product:",
             verbose,
         )
 
         # Find category:
-        self.data[["product_norm", "cat_norm"]] = self.data.apply(
-            lambda x: self.find_category(
-                x["name_norm"], x["product_norm"], x["cat_norm"]
-            ),
-            axis=1,
-        )
+        self.data[["product_norm", "cat_norm"]] = self.data[
+            ["name_norm", "product_norm", "cat_norm"]
+        ].appl(self.find_category)
         self.__print_logs("Find the remaining categories:", verbose)
 
         # Find product by brand:
-        self.data[
-            ["product_norm", "brand_norm", "cat_norm"]
-        ] = self.data.apply(
-            lambda x: self.find_product(
-                x["product_norm"], x["brand_norm"], x["cat_norm"]
-            ),
-            axis=1,
-        )
+        self.data[["product_norm", "brand_norm", "cat_norm"]] = self.data[
+            ["name_norm", "product_norm", "cat_norm"]
+        ].appl(self.find_product)
         self.__print_logs("Find product by brand:", verbose)
 
     def find_all(
