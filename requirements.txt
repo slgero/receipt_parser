@@ -1,3 +1,4 @@
+Cython>=0.29.21
 numpy >= 1.18.3
 pandas >= 1.0.3
 pymystem3 >= 0.2.0
