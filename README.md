@@ -27,6 +27,12 @@ src="https://github.com/slgero/receipt_parser/workflows/Upload%20Python%20Packag
 ```bash
 pip install receipt-parser
 ```
+>Если возникнет ошибка при установке пакета:
+>`Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-build-izdic4qt/youtokentome/`
+>То установите Cython и повторите попытку:
+	```bash
+	pip install Cython
+	```
 
 ## Usage
 Для распознавания сейчас доступна только [RuleBased](https://github.com/slgero/receipt_parser/blob/master/receipt_parser/receipt_parser.py#L75) модель.
@@ -40,7 +46,7 @@ rb = RuleBased()
 rb.parse(product_desription)
 ```
  *output*:
-
+ 
 |    | name                           | product_norm   | brand_norm   | cat_norm            |
 |---:|:-------------------------------|:---------------|:-------------|:--------------------|
 |  0 | Нап.пив.ХУГАР.ГРЕЙПФ.н/ф 0.47л | напиток, пиво  | hoegaarden   | Воды, соки, напитки |
