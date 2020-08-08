@@ -71,7 +71,7 @@ class Perecrestok:
     def __parse_good(self, url: str) -> Dict[str, Optional[str]]:
         """Parse information about the product."""
 
-        product: Dict[str, Optional[str]] = dict()
+        product: Dict[str, Optional[str]] = {}
         _ = [product.setdefault(key, None) for key in self.columns]
         resp = req.get(url)
         if resp.status_code != 200:
