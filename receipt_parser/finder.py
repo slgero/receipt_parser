@@ -385,7 +385,7 @@ class Finder:
 
         # Find product by brand:
         self.data[["product_norm", "brand_norm", "cat_norm"]] = self.data[
-            ["name_norm", "product_norm", "cat_norm"]
+            ["product_norm", "brand_norm", "cat_norm"]
         ].appl(self.find_product)
         self.__print_logs("Find product by brand:", verbose)
 
