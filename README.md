@@ -30,7 +30,7 @@ pip install receipt-parser
 >Если возникнет ошибка при установке пакета:
 >`Command "python setup.py egg_info" failed with error code 1 in /tmp/pip-build-izdic4qt/youtokentome/`
 >То установите Cython и повторите попытку:
-	```bash
+	```
 	pip install Cython
 	```
 
@@ -76,5 +76,5 @@ rb.parse(df)
 * дополните словари и датасеты;
 * поможете с разметкой.
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTA0MTkyODBdfQ==
+eyJoaXN0b3J5IjpbMTI1NjY1NTg2OF19
 -->
