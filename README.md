@@ -75,3 +75,6 @@ rb.parse(df)
 * сможете оптимизировать код;
 * дополните словари и датасеты;
 * поможете с разметкой.
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbNTA0MTkyODBdfQ==
+-->
